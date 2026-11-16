@@ -4,7 +4,7 @@
 |---|---|
 | 版本 | v0.1（已实现并验收） |
 | 日期 | 2026-11-16 |
-| 状态 | v0.1.0 本地跑通，等 GitHub 仓库地址 |
+| 状态 | v0.1.0 已推送：<https://github.com/ZZh2333/dsh-permission-autoswitch> |
 | 目标环境 | DeepSeek Harness 0.2.2-rc.1，Windows，本机 profile `desktop` |
 | 关联会话 | 2026-11-16 关于「定时任务默认权限」的讨论 |
 
@@ -253,13 +253,13 @@ dsh-permission-autoswitch/
 |---|---|---|
 | M1 | 判定逻辑 + 切换逻辑 + 日志 | ✅ 已在真实定时任务上验证 |
 | M2 | 配置项 + 设置页 + 校验 | ✅ 设置页已注册，接口真机验证 |
-| M3 | 测试 + README + 脱敏推送 | ✅ 38 条测试；推送等仓库地址 |
+| M3 | 测试 + README + 脱敏推送 | ✅ 38 条测试；已推到 `git@github.com:ZZh2333/dsh-permission-autoswitch.git`
 
 ---
 
 ## 13. 未决问题
 
-1. **GitHub 仓库地址** —— 仍需主人提供；代码在本工作区的 `dsh-permission-autoswitch` 目录里跑通，尚未推送。
+1. **GitHub 仓库地址** —— 已拿到：`git@github.com:ZZh2333/dsh-permission-autoswitch.git`，`main` 首个提交 `d4b633e`，标签 `v0.1.0`。
 2. 是否顺手覆盖 `source.kind` 为其它值的场景 —— v0.1 不做，往 `sources` 里加一项即可，不用改代码。
 3. 是否在切换时往会话里补一句可见提示 —— v0.1 **不写**，避免污染任务上下文。
 4. `respectManual` 的判定细节 —— 已定：数会话里 `permission/preset` 事件条数（创建时那条算 1，>1 就认为人工改过）。
