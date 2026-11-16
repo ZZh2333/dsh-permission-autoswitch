@@ -1,0 +1,58 @@
+{
+  "name": "dsh-permission-autoswitch",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "定时任务投递出来的会话，在第一次工具调用前自动切到完全权限；手动、QQ、子代理会话保持原样。带设置页。",
+  "main": "lib/index.js",
+  "exports": {
+    ".": "./lib/index.js",
+    "./client": "./client.js",
+    "./cordis.patch.yml": "./cordis.patch.yml",
+    "./locale/*.json": "./locale/*.json",
+    "./icon": "./icon.svg",
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "lib",
+    "client.js",
+    "cordis.patch.yml",
+    "locale",
+    "icon.svg",
+    "README.md",
+    "LICENSE"
+  ],
+  "dsh": {
+    "bundle": {
+      "patch": "./cordis.patch.yml"
+    },
+    "client": {
+      "platform": "web",
+      "inject": [
+        "@deepseek-ai/dsh-client-runtime",
+        "@deepseek-ai/dsh-client-ui-settings",
+        "@deepseek-ai/dsh-client-ui-settings-plugins"
+      ]
+    }
+  },
+  "scripts": {
+    "test": "node --test test/detect.test.mjs test/config.test.mjs"
+  },
+  "keywords": [
+    "deepseek-harness",
+    "dsh-plugin",
+    "permission",
+    "schedule",
+    "sandbox",
+    "approval"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ZZh2333/dsh-permission-autoswitch.git"
+  },
+  "homepage": "https://github.com/ZZh2333/dsh-permission-autoswitch",
+  "bugs": {
+    "url": "https://github.com/ZZh2333/dsh-permission-autoswitch/issues"
+  },
+  "license": "MIT"
+}

@@ -1,0 +1,6 @@
+{
+  "meta": {
+    "title": "Permission autoswitch",
+    "description": "Promotes sessions created by scheduled deliveries to full access before their first tool call; every other session stays as it was."
+  }
+}
