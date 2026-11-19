@@ -26,6 +26,22 @@ test('normalizeField：类型不对就拒收，不抛错', () => {
   assert.equal(normalizeField('nope', 1).ok, false)
 })
 
+test('normalizeField：sessionIdPattern 留空放行，坏正则拒收', () => {
+  assert.deepEqual(normalizeField('sessionIdPattern', '  '), { ok: true, value: '' })
+  assert.deepEqual(normalizeField('sessionIdPattern', ' ^bili-whale '), { ok: true, value: '^bili-whale' })
+  assert.equal(normalizeField('sessionIdPattern', 1).ok, false)
+  const bad = normalizeField('sessionIdPattern', '(未闭合')
+  assert.equal(bad.ok, false)
+  assert.match(bad.reason, /不是合法正则/)
+})
+
+test('mergeConfig：sessionIdPattern 有值就用，没写就留默认空串', () => {
+  assert.equal(DEFAULTS.sessionIdPattern, '')
+  const { config } = mergeConfig(DEFAULTS, { sessionIdPattern: '^(bili-whale|[0-9a-f-]{36}$)' })
+  assert.equal(config.sessionIdPattern, '^(bili-whale|[0-9a-f-]{36}$)')
+  assert.equal(mergeConfig(DEFAULTS, {}).config.sessionIdPattern, '')
+})
+
 test('mergeConfig：坏字段跳过，好字段生效', () => {
   const { config, rejected } = mergeConfig(DEFAULTS, {
     enabled: false,

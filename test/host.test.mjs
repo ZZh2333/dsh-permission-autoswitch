@@ -175,6 +175,44 @@ test('session/event：白名单外的来源一根汗毛都不动', () => {
   assert.deepEqual(session.presets.calls, [])
 })
 
+/* ── 第二条通道：会话 id 命中 sessionIdPattern（养鱼这类插件自建的会话） ── */
+
+const ID_PATTERN = '^(my-bot|[0-9a-f-]{36}$)'
+
+test('session/event：会话 id 命中规则 → 即使来源是 user 也切', () => {
+  const handle = boot({ sessionIdPattern: ID_PATTERN })
+  const session = handle.use(makeSession({ id: 'my-bot-workdir' }))
+  handle.handlers.get('session/event')(session, userMessage(9, 'user'))
+  assert.deepEqual(session.presets.calls, ['danger-full-access'])
+})
+
+test('session/event：id 不命中时，user 来源照旧不动', () => {
+  const handle = boot({ sessionIdPattern: ID_PATTERN })
+  const session = handle.use(makeSession({ id: 'session-abc' }))
+  handle.handlers.get('session/event')(session, userMessage(9, 'user'))
+  assert.deepEqual(session.presets.calls, [])
+})
+
+test('session/event：id 命中的旧会话（已有消息）也要能提权', () => {
+  const handle = boot({ sessionIdPattern: ID_PATTERN })
+  const session = handle.use(makeSession({ id: 'my-bot-workdir', events: [userMessage(3, 'user')] }))
+  handle.handlers.get('session/event')(session, userMessage(9, 'user'))
+  assert.deepEqual(session.presets.calls, ['danger-full-access'])
+})
+
+test('agent/pre-step：id 命中时不等真消息，直接切', async () => {
+  const handle = boot({ sessionIdPattern: ID_PATTERN })
+  const session = handle.use(makeSession({ id: '85f455ce-a189-4b24-8ae2-a5a5a384e97e' }))
+  const preStep = handle.handlers.get('agent/pre-step')
+  let nexted = 0
+  await preStep(
+    { agent: { id: session.id, session }, messages: [{ source: { kind: 'runtime-context' } }], turn: 1, step: 1 },
+    () => { nexted += 1; return Promise.resolve({ kind: 'enter', messages: [] }) },
+  )
+  assert.equal(nexted, 1)
+  assert.deepEqual(session.presets.calls, ['danger-full-access'])
+})
+
 test('session/event：系统注入的消息不触发判定', () => {
   const handle = boot()
   const session = handle.use(makeSession())

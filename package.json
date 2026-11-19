@@ -1,9 +1,9 @@
 {
   "name": "dsh-permission-autoswitch",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "private": true,
   "type": "module",
-  "description": "定时任务投递出来的会话，在第一次工具调用前自动切到完全权限；手动、QQ、子代理会话保持原样。带设置页。",
+  "description": "自动投递出来的会话（定时任务 / 插件自建），在第一次工具调用前自动切到完全权限；手动、QQ、子代理会话保持原样。带设置页。",
   "main": "lib/index.js",
   "exports": {
     ".": "./lib/index.js",
@@ -36,7 +36,7 @@
     }
   },
   "scripts": {
-    "test": "node --test test/detect.test.mjs test/config.test.mjs"
+    "test": "node --test test/detect.test.mjs test/config.test.mjs test/host.test.mjs"
   },
   "keywords": [
     "deepseek-harness",

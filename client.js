@@ -69,12 +69,14 @@ window.__ModuleLoader__.load({
       const [msg, setMsg] = React.useState('')
       const [bad, setBad] = React.useState(false)
       const [sources, setSources] = React.useState('')
+      const [idPattern, setIdPattern] = React.useState('')
       const alive = React.useRef(true)
       React.useEffect(() => () => { alive.current = false }, [])
 
       const adopt = (s) => {
         setSt(s)
         setSources(Array.isArray(s?.config?.sources) ? s.config.sources.join(', ') : '')
+        setIdPattern(typeof s?.config?.sessionIdPattern === 'string' ? s.config.sessionIdPattern : '')
       }
 
       const load = React.useCallback(async () => {
@@ -190,6 +192,25 @@ window.__ModuleLoader__.load({
           h('div', { 'data-pa-note': '' },
             '比对会话首条有效用户消息的 source.kind，逗号分隔。定时任务投递的是 schedule；' +
             'agent-instructions / runtime-context / time-context 这类系统注入会被跳过。')),
+
+        h('div', { 'data-pa-sec': '' },
+          h('div', { 'data-pa-h': '' }, '会话 id 规则（第二条通道）'),
+          h('input', {
+            'data-pa-in': '',
+            value: idPattern,
+            disabled: busy === 'save',
+            spellCheck: false,
+            placeholder: '留空 = 关闭，例如 ^(bili-whale|[0-9a-f-]{36}$)',
+            onChange: (e) => setIdPattern(e.target.value),
+            onBlur: () => {
+              const next = idPattern.trim()
+              if (next !== String(cfg.sessionIdPattern ?? '')) save({ sessionIdPattern: next })
+            },
+          }),
+          h('div', { 'data-pa-note': '' },
+            '会话 id 命中这条正则时不看消息来源，直接提权——给"插件自己建、自己投递"的会话用' +
+            '（它们的 source.kind 也是 user，和人手打的分不开，只能按 id 认）。' +
+            '留空就只走上面的来源白名单。')),
 
         h('div', { 'data-pa-sec': '' },
           h('div', { 'data-pa-h': '' }, '行为'),

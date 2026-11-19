@@ -1,4 +1,4 @@
-# dsh-permission-autoswitch · 需求说明文档
+﻿# dsh-permission-autoswitch · 需求说明文档
 
 | 项 | 内容 |
 |---|---|
@@ -311,3 +311,45 @@ dsh-permission-autoswitch/
 - 宿主半是 `link:` 安装的，**改完 `lib/*.js` 要重启宿主才生效**（`client.js` 由客户端 HMR 单独管）。
 - 设置页的渲染细节没在浏览器里逐像素看过，只验证了插槽注册与接口行为。
 - `new_once` 目标复用会话时，第二次投递因为「不是首条消息」不会重切 —— 设计如此（`requireFirstMessage` 默认开）。
+
+---
+
+## 15. 0.2.0：第二条通道（会话 id）
+
+### 15.1 起因
+
+有些插件不经过 `ctx.schedule`，自己 `controller.create({ sessionId })` 一个会话再
+`controller.prompt(...)` 投递（典型做法：`sessionId` 用固定名字或 `crypto.randomUUID()`）。
+这类投递出来的消息 `source.kind` 是 `user`，和人在 GUI 里打字一模一样，白名单永远匹配不上；
+新会话又已经在 `agent/created` 时被钉成 `workspace-write + ask`，第一次往工作区外写就抛审批。
+那个会话没人开在界面上，审批没人答，投递队列（`tail` 串行）就一起停住 —— 表现为"新建会话卡在权限审批"。
+
+### 15.2 做法
+
+新增配置项 `sessionIdPattern`（正则源串，默认空 = 关闭）。命中就跳过来源白名单和
+`requireFirstMessage`，直接走提权；`respectManual` 仍然生效。
+
+区分依据是 id 形状：GUI / 定时任务 / 子代理建的会话一律 `session-` 开头，
+插件自建的基本不是。示例：
+
+```
+sessionIdPattern: ^(my-bot|[0-9a-f-]{36}$)
+```
+
+| 会话 id | 命中 | 谁建的 |
+|---|---|---|
+| `my-bot-workdir` | ✓ | 固定名字的插件会话 |
+| `85f455ce-a189-4b24-8ae2-a5a5a384e97e` | ✓ | 插件用裸 UUID 轮换出来的 |
+| `session-85f455ce-…` | ✗ | GUI / 定时任务 / 子代理 |
+
+### 15.3 验收
+
+| # | 项 | 结果 |
+|---|---|---|
+| 1 | id 命中 + 来源 `user` → 提权 | 单测 `decide` 与假宿主 `session/event` 各一条 |
+| 2 | id 命中 + 已有历史消息 → 仍提权 | 同上（绕开 `requireFirstMessage`） |
+| 3 | id 命中 + 人工改过 → 不覆盖 | 同上 |
+| 4 | `agent/pre-step` 只有系统注入消息时也能提权 | 假宿主测试：不等真消息 |
+| 5 | id 不命中 → 行为与 0.1.0 完全一致 | 单测断言 `skip` |
+| 6 | 坏正则 / 留空 → 一律不命中（不能误伤） | `matchesIdPattern` 三条断言 |
+| 7 | 活体 | 插件运行中关闭再开启后重新加载新代码；`GET /api/permission-autoswitch/status` 能返回 `sessionIdPattern`，`POST /config` 即时写回；测试 50 条全绿 |
